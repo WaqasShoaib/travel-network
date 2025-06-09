@@ -18,12 +18,13 @@ app.use(cors());
 // Import routes
 const authRoutes = require('./routes/auth');
 const travelLogRoutes = require('./routes/travelLog');
-
+const userRoutes = require('./routes/user');
 
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/travellogs', travelLogRoutes);
+app.use('/api/user', userRoutes);
 
 
 // Placeholder/test route

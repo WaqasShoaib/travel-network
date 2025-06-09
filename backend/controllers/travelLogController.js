@@ -27,9 +27,18 @@ exports.getAllTravelLogs = async (req, res) => {
   try {
     const { tag, location, user } = req.query;
     let filter = {};
-    if (tag) filter.tags = tag;
+
+    // Tag filter: support multiple, case-insensitive
+    if (tag) {
+      const tagsArray = tag.split(',').map(t => new RegExp(`^${t.trim()}$`, 'i'));
+      filter.tags = { $in: tagsArray };
+    }
+
+    // Location filter: partial, case-insensitive
     if (location) filter.location = { $regex: location, $options: 'i' };
+
     if (user) filter.user = user;
+
     const logs = await TravelLog.find(filter).populate('user', 'username');
     res.status(200).json(logs);
   } catch (err) {
