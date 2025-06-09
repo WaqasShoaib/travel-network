@@ -19,12 +19,14 @@ app.use(cors());
 const authRoutes = require('./routes/auth');
 const travelLogRoutes = require('./routes/travelLog');
 const userRoutes = require('./routes/user');
+const commentRoutes = require('./routes/comment');
 
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/travellogs', travelLogRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/comments', commentRoutes);
 
 
 // Placeholder/test route
