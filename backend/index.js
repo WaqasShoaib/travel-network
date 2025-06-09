@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
+
 // Load environment variables from .env
 dotenv.config();
 
@@ -16,9 +17,14 @@ app.use(cors());
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const travelLogRoutes = require('./routes/travelLog');
+
+
 
 // Use routes
 app.use('/api/auth', authRoutes);
+app.use('/api/travellogs', travelLogRoutes);
+
 
 // Placeholder/test route
 app.get('/', (req, res) => {
