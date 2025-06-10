@@ -1,20 +1,32 @@
 const express = require('express');
 const router = express.Router();
-const { createTravelLog, getAllTravelLogs,updateTravelLog, deleteTravelLog } = require('../controllers/travelLogController');
+const {
+  createTravelLog,
+  getAllTravelLogs,
+  getTravelLogById,
+  updateTravelLog,
+  deleteTravelLog,
+  getPersonalLogs,
+} = require('../controllers/travelLogController');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
-
-// For image upload (protected)
+// POST /api/travellogs — Create new log (with image upload, protected)
 router.post('/', auth, upload.single('image'), createTravelLog);
-
-// POST /api/travellogs — Create new log (protected)
-router.post('/', auth, createTravelLog);
 
 // GET /api/travellogs — Fetch all logs (public)
 router.get('/', getAllTravelLogs);
 
-router.put('/:id', auth, updateTravelLog);      // Edit log (by ID)
-router.delete('/:id', auth, deleteTravelLog);   // Delete log (by ID)
+// GET /api/travellogs/personal — Get personal logs (protected) - MOVE THIS BEFORE /:id
+router.get('/personal', auth, getPersonalLogs);
+
+// GET /api/travellogs/:id — Fetch a single log (protected)
+router.get('/:id', auth, getTravelLogById);
+
+// PUT /api/travellogs/:id — Edit log (protected)
+router.put('/:id', auth, updateTravelLog);
+
+// DELETE /api/travellogs/:id — Delete log (protected)
+router.delete('/:id', auth, deleteTravelLog);
 
 module.exports = router;
