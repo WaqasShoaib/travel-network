@@ -9,7 +9,6 @@ import Navbar from './components/Navbar';
 import CreateLog from './pages/CreateLog';
 import AllLogs from './pages/AllLogs';
 import EditLog from './pages/EditLog';
-import CommentsPage from './pages/TravelLogDetail';  // Import the CommentsPage
 
 function App() {
   return (
@@ -27,8 +26,7 @@ function App() {
         <Route path="/all-logs" element={<AllLogs />} />
         <Route path="/edit-log/:id" element={<ProtectedRoute><EditLog /></ProtectedRoute>} />
         
-        {/* Route for viewing comments of a specific travel log */}
-        <Route path="/comments/:id" element={<CommentsPage />} />  {/* Comments page for a specific log */}
+ 
       </Routes>
     </Router>
   );
