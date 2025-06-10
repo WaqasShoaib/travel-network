@@ -1,35 +1,67 @@
 import React, { useEffect, useState } from 'react';
+import axios from '../utils/axios';  // Import axios instance
 import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState(null);
+  const [savedLogs, setSavedLogs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/login');  // Redirect to login if no token
     } else {
-      // Fetch user data from API if token exists
-      // Replace with actual API call to fetch user-specific data
-      setUserData({
-        username: 'JohnDoe',
-        savedLogs: ['Log 1', 'Log 2'],
-      });
+      // Fetch saved travel logs using the stored token
+      const fetchSavedLogs = async () => {
+        try {
+          const res = await axios.get('/user/saved-logs', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setSavedLogs(res.data);  // Set saved logs in state
+        } catch (err) {
+          console.error('Error fetching saved logs:', err);
+        } finally {
+          setIsLoading(false); // Set loading to false once data is fetched
+        }
+      };
+      fetchSavedLogs();
     }
   }, [navigate]);
 
-  if (!userData) return <div>Loading...</div>;
+  // Handle unsaving (removing) a log
+  const handleUnsave = async (logId) => {
+    const token = localStorage.getItem('token');
+    try {
+      await axios.post('/user/unsave-log', { logId }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSavedLogs(savedLogs.filter((log) => log._id !== logId));  // Remove log from state
+    } catch (err) {
+      console.error('Error unsaving log:', err);
+    }
+  };
+
+  if (isLoading) return <div>Loading...</div>; // Show loading state if fetching data
 
   return (
     <div>
-      <h2>Welcome {userData.username}!</h2>
+      <h2>Welcome to Your Dashboard!</h2>
       <h3>Your Saved Logs:</h3>
-      <ul>
-        {userData.savedLogs.map((log, index) => (
-          <li key={index}>{log}</li>
-        ))}
-      </ul>
+
+      {savedLogs.length === 0 ? (
+        <p>You have no saved logs yet!</p>
+      ) : (
+        <ul>
+          {savedLogs.map((log, index) => (
+            <li key={index}>
+              <h4>{log.title}</h4>
+              <p>{log.description}</p>
+              <button onClick={() => handleUnsave(log._id)}>Unsave</button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
