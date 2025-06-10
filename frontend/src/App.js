@@ -9,6 +9,7 @@ import Navbar from './components/Navbar';
 import CreateLog from './pages/CreateLog';
 import AllLogs from './pages/AllLogs';
 import EditLog from './pages/EditLog';
+import SavedLogs from './pages/SavedLogs';  // Import the new SavedLogs component
 
 function App() {
   return (
@@ -19,14 +20,13 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Home />} />
+        <Route path="/all-logs" element={<AllLogs />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/create-log" element={<ProtectedRoute><CreateLog /></ProtectedRoute>} />
-        <Route path="/all-logs" element={<AllLogs />} />
         <Route path="/edit-log/:id" element={<ProtectedRoute><EditLog /></ProtectedRoute>} />
-        
- 
+        <Route path="/saved-logs" element={<ProtectedRoute><SavedLogs /></ProtectedRoute>} />
       </Routes>
     </Router>
   );
