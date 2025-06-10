@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import axios from '../utils/axios';  // Import the axios instance
-import { useNavigate } from 'react-router-dom';  // To navigate after successful registration
+import axios from '../utils/axios';
+import { useNavigate } from 'react-router-dom';
+import { TextField, Button } from '@mui/material';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -21,8 +22,8 @@ function Register() {
     e.preventDefault();
     try {
       const res = await axios.post('/auth/register', formData);
-      localStorage.setItem('token', res.data.token);  // Store the token in localStorage
-      navigate('/dashboard');  // Redirect to dashboard or home page
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard'); // Redirect to dashboard after successful registration
     } catch (err) {
       console.error('Registration failed:', err);
     }
@@ -32,28 +33,35 @@ function Register() {
     <div>
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
+        <TextField
+          label="Username"
+          variant="outlined"
           name="username"
-          placeholder="Username"
           value={formData.username}
           onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
-        <input
-          type="email"
+        <TextField
+          label="Email"
+          variant="outlined"
           name="email"
-          placeholder="Email"
           value={formData.email}
           onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
-        <input
-          type="password"
+        <TextField
+          label="Password"
+          variant="outlined"
           name="password"
-          placeholder="Password"
           value={formData.password}
           onChange={handleChange}
+          type="password"
+          fullWidth
+          margin="normal"
         />
-        <button type="submit">Register</button>
+        <Button type="submit" variant="contained" fullWidth>Register</Button>
       </form>
     </div>
   );

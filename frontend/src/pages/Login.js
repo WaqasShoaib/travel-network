@@ -20,8 +20,8 @@ function Login() {
     e.preventDefault();
     try {
       const res = await axios.post('/auth/login', formData);
-      localStorage.setItem('token', res.data.token);  // Store token in localStorage
-      navigate('/dashboard');  // Redirect to dashboard or home page
+      localStorage.setItem('token', res.data.token);
+      navigate('/dashboard'); // Redirect to dashboard after successful login
     } catch (err) {
       console.error('Login failed:', err);
     }

@@ -2,13 +2,15 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';  // Now that it's created
-import Home from './pages/Home';  // Now that it's created
+import Dashboard from './pages/Dashboard';  
+import Home from './pages/Home';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';  // Import Navbar
 
 function App() {
   return (
     <Router>
+      <Navbar /> {/* Add Navbar here */}
       <Routes>
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -22,7 +24,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/" element={<Home />} /> {/* Now defined */}
+        <Route path="/" element={<Home />} />
       </Routes>
     </Router>
   );
