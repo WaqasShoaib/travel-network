@@ -1,7 +1,48 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  Box,
+  Grid,
+  Paper,
+  Divider,
+  Badge,
+  CircularProgress,
+  Collapse,
+  Stack,
+  Alert,
+  Fade
+} from '@mui/material';
+import {
+  FilterList,
+  ExpandLess,
+  ExpandMore,
+  Clear,
+  LocationOn,
+  Schedule,
+  Person,
+  Favorite,
+  FavoriteBorder,
+  Comment,
+  Explore,
+  BookmarkRemove,
+  Collections,
+  Tag
+} from '@mui/icons-material';
 import axios from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../components/Comments';
+import './SavedLogs.css';
 
 function SavedLogs() {
   const [allSavedLogs, setAllSavedLogs] = useState([]);
@@ -10,6 +51,7 @@ function SavedLogs() {
   const [expandedComments, setExpandedComments] = useState({});
   const [currentUserId, setCurrentUserId] = useState(null);
   const [unsavingLogs, setUnsavingLogs] = useState({});
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   // Filter states
@@ -34,6 +76,7 @@ function SavedLogs() {
       setCurrentUserId(payload.id);
     } catch (err) {
       console.error('Error parsing token:', err);
+      setError('Invalid session. Please log in again.');
     }
 
     const fetchSavedLogs = async () => {
@@ -56,6 +99,8 @@ function SavedLogs() {
         console.error('Error fetching saved logs:', err);
         if (err.response?.status === 401) {
           navigate('/login');
+        } else {
+          setError('Failed to load your saved logs. Please try again.');
         }
       } finally {
         setLoading(false);
@@ -145,11 +190,7 @@ function SavedLogs() {
   const handleUnsaveLog = async (logId) => {
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please log in to manage saved posts');
-      return;
-    }
-
-    if (!window.confirm('Remove this post from your saved collection?')) {
+      setError('Please log in to manage saved posts');
       return;
     }
 
@@ -176,7 +217,7 @@ function SavedLogs() {
       setAvailableTags(Array.from(tags).sort());
     } catch (err) {
       console.error('Error unsaving log:', err);
-      alert('Failed to unsave post. Please try again.');
+      setError('Failed to unsave post. Please try again.');
     } finally {
       setUnsavingLogs(prev => ({ ...prev, [logId]: false }));
     }
@@ -184,386 +225,350 @@ function SavedLogs() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', marginTop: '50px' }}>
-        <h3>Loading your saved travel logs...</h3>
-      </div>
+      <Container maxWidth="lg" className="loading-container">
+        <Paper className="loading-paper" elevation={2}>
+          <CircularProgress size={60} className="loading-spinner" />
+          <Typography variant="h5" className="loading-text">
+            Loading your saved travel logs...
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Preparing your collection
+          </Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" className="error-container">
+        <Alert severity="error" className="error-alert" onClose={() => setError('')}>
+          {error}
+        </Alert>
+      </Container>
     );
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Your Saved Travel Logs ({filteredLogs.length})</h2>
-        <button
-          onClick={() => navigate('/all-logs')}
-          style={{
-            padding: '10px 20px',
-            backgroundColor: '#1976d2',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            cursor: 'pointer',
-            fontSize: '14px'
-          }}
-        >
-          🌍 Browse More Logs
-        </button>
-      </div>
-      
-      {allSavedLogs.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '50px', border: '1px solid #ddd', borderRadius: '8px' }}>
-          <h3>📚 No saved travel logs yet!</h3>
-          <p style={{ color: '#666', marginBottom: '20px' }}>
-            Start building your collection by saving interesting travel logs from other adventurers.
-          </p>
-          <button
+    <Container maxWidth="lg" className="saved-logs-container">
+      {/* Header Section */}
+      <Paper className="header-paper" elevation={2}>
+        <Box className="header-content">
+          <Box className="header-title-section">
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <Collections className="header-icon" />
+              <Box>
+                <Typography variant="h3" component="h1" className="page-title">
+                  Your Saved Travel Logs ({filteredLogs.length})
+                </Typography>
+                <Typography variant="body1" color="text.secondary" className="page-subtitle">
+                  Your personal collection of inspiring adventures
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+          
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Explore />}
             onClick={() => navigate('/all-logs')}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#1976d2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '16px'
-            }}
+            className="browse-button"
           >
-            🔍 Discover Travel Logs
-          </button>
-        </div>
-      ) : (
-        <div>
-          {/* Filter Panel */}
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            border: '1px solid #dee2e6', 
-            borderRadius: '8px', 
-            padding: '20px', 
-            marginBottom: '20px' 
-          }}>
-            {/* Filter Toggle Button */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showFilters ? '20px' : '0' }}>
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
+            Browse More Logs
+          </Button>
+        </Box>
+      </Paper>
+
+      {allSavedLogs.length === 0 ? (
+        <Fade in timeout={500}>
+          <Paper className="empty-state" elevation={3}>
+            <Box className="empty-state-content">
+              <Collections className="empty-state-icon" />
+              <Typography variant="h4" className="empty-state-title">
+                Start Building Your Collection!
+              </Typography>
+              <Typography variant="body1" color="text.secondary" className="empty-state-subtitle">
+                Save interesting travel logs from other adventurers to read later and build your inspiration collection.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<Explore />}
+                onClick={() => navigate('/all-logs')}
+                className="empty-state-button"
               >
-                🔍 Filter Your Collection {showFilters ? '🔼' : '🔽'}
-                {getActiveFilterCount() > 0 && (
-                  <span style={{
-                    backgroundColor: '#ff6b6b',
-                    color: 'white',
-                    borderRadius: '50%',
-                    width: '20px',
-                    height: '20px',
-                    fontSize: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {getActiveFilterCount()}
-                  </span>
-                )}
-              </button>
+                Discover Travel Logs
+              </Button>
+            </Box>
+          </Paper>
+        </Fade>
+      ) : (
+        <Box>
+          {/* Filter Panel */}
+          <Paper className="filter-panel" elevation={2}>
+            {/* Filter Toggle Button */}
+            <Box className="filter-header">
+              <Badge badgeContent={getActiveFilterCount()} color="error">
+                <Button
+                  variant="contained"
+                  startIcon={<FilterList />}
+                  endIcon={showFilters ? <ExpandLess /> : <ExpandMore />}
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="filter-toggle-btn"
+                >
+                  Filter Your Collection
+                </Button>
+              </Badge>
 
               {getActiveFilterCount() > 0 && (
-                <button
+                <Button
+                  variant="outlined"
+                  startIcon={<Clear />}
                   onClick={clearFilters}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#6c757d',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontSize: '14px'
-                  }}
+                  className="clear-filters-btn"
                 >
-                  ❌ Clear Filters
-                </button>
+                  Clear Filters
+                </Button>
               )}
-            </div>
+            </Box>
 
             {/* Filter Controls */}
-            {showFilters && (
-              <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+            <Collapse in={showFilters}>
+              <Box className="filter-controls">
+                <Grid container spacing={3}>
                   {/* Location Filter */}
-                  <div>
-                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>
-                      📍 Location
-                    </label>
-                    <input
-                      type="text"
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth
+                      label="Location"
                       placeholder="Search by location..."
                       value={filters.location}
                       onChange={handleLocationChange}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '14px'
+                      InputProps={{
+                        startAdornment: <LocationOn sx={{ mr: 1, color: 'action.active' }} />
                       }}
                     />
-                  </div>
+                  </Grid>
 
                   {/* Sort Filter */}
-                  <div>
-                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>
-                      📊 Sort By
-                    </label>
-                    <select
-                      value={filters.sortBy}
-                      onChange={handleSortChange}
-                      style={{
-                        width: '100%',
-                        padding: '8px 12px',
-                        border: '1px solid #ced4da',
-                        borderRadius: '4px',
-                        fontSize: '14px'
-                      }}
-                    >
-                      <option value="newest">Recently Saved</option>
-                      <option value="oldest">Oldest Saved</option>
-                      <option value="alphabetical">A-Z</option>
-                    </select>
-                  </div>
+                  <Grid item xs={12} md={4}>
+                    <FormControl fullWidth>
+                      <InputLabel>Sort By</InputLabel>
+                      <Select
+                        value={filters.sortBy}
+                        label="Sort By"
+                        onChange={handleSortChange}
+                      >
+                        <MenuItem value="newest">Recently Saved</MenuItem>
+                        <MenuItem value="oldest">Oldest Saved</MenuItem>
+                        <MenuItem value="alphabetical">A-Z</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
                   {/* Collection Info */}
-                  <div>
-                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>
-                      📚 Collection
-                    </label>
-                    <div style={{
-                      padding: '8px 12px',
-                      backgroundColor: 'white',
-                      border: '1px solid #ced4da',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      color: '#495057'
-                    }}>
-                      {filteredLogs.length} of {allSavedLogs.length} saved
-                    </div>
-                  </div>
-                </div>
+                  <Grid item xs={12} md={4}>
+                    <Paper className="collection-info">
+                      <Typography variant="body2" color="text.secondary">
+                        Collection
+                      </Typography>
+                      <Typography variant="h6" color="primary">
+                        {filteredLogs.length} of {allSavedLogs.length} saved
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
 
                 {/* Tag Filter */}
                 {availableTags.length > 0 && (
-                  <div>
-                    <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '12px', fontSize: '14px' }}>
-                      🏷️ Tags in Your Collection ({filters.selectedTags.length} selected)
-                    </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '120px', overflowY: 'auto', padding: '8px' }}>
+                  <Box className="tag-filter-section">
+                    <Typography variant="body2" className="tag-filter-label">
+                      <Tag sx={{ mr: 1 }} />
+                      Tags in Your Collection ({filters.selectedTags.length} selected)
+                    </Typography>
+                    <Box className="tag-container">
                       {availableTags.map(tag => (
-                        <button
+                        <Chip
                           key={tag}
+                          label={tag}
+                          clickable
+                          variant={filters.selectedTags.includes(tag) ? "filled" : "outlined"}
+                          color={filters.selectedTags.includes(tag) ? "primary" : "default"}
                           onClick={() => handleTagToggle(tag)}
-                          style={{
-                            padding: '6px 12px',
-                            border: '1px solid #ced4da',
-                            borderRadius: '20px',
-                            backgroundColor: filters.selectedTags.includes(tag) ? '#1976d2' : 'white',
-                            color: filters.selectedTags.includes(tag) ? 'white' : '#495057',
-                            cursor: 'pointer',
-                            fontSize: '12px',
-                            fontWeight: filters.selectedTags.includes(tag) ? 'bold' : 'normal',
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          {tag} {filters.selectedTags.includes(tag) ? '✓' : ''}
-                        </button>
+                          className="tag-chip"
+                        />
                       ))}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 )}
-              </div>
-            )}
-          </div>
+              </Box>
+            </Collapse>
+          </Paper>
 
           {/* Collection Summary */}
           {!showFilters && (
-            <div style={{ marginBottom: '20px', padding: '15px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-              <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
+            <Paper className="collection-summary" elevation={1}>
+              <Typography variant="body2" className="summary-text">
                 💡 <strong>{filteredLogs.length}</strong> travel log{filteredLogs.length !== 1 ? 's' : ''} in your collection. 
-                Click ❤️ to remove from saved.
+                Click <Favorite sx={{ fontSize: 16, mx: 0.5, color: '#ff6b6b' }} /> to remove from saved.
                 {getActiveFilterCount() > 0 && (
-                  <span style={{ color: '#1976d2', fontWeight: 'bold' }}>
-                    {' '}({getActiveFilterCount()} filter{getActiveFilterCount() !== 1 ? 's' : ''} active)
-                  </span>
+                  <Typography component="span" color="primary" sx={{ fontWeight: 600, ml: 1 }}>
+                    ({getActiveFilterCount()} filter{getActiveFilterCount() !== 1 ? 's' : ''} active)
+                  </Typography>
                 )}
-              </p>
-            </div>
+              </Typography>
+            </Paper>
           )}
 
           {/* Results */}
           {filteredLogs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '50px', border: '1px solid #ddd', borderRadius: '8px' }}>
-              <h3>🔍 No saved logs match your filters</h3>
-              <p>Try adjusting your search criteria or clear filters to see all your saved posts.</p>
-              <button
-                onClick={clearFilters}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#1976d2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontSize: '14px'
-                }}
-              >
-                ❌ Clear All Filters
-              </button>
-            </div>
+            <Paper className="no-results">
+              <Box>
+                <Typography variant="h5" gutterBottom>
+                  🔍 No saved logs match your filters
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  Try adjusting your search criteria or clear filters to see all your saved posts.
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<Clear />}
+                  onClick={clearFilters}
+                >
+                  Clear All Filters
+                </Button>
+              </Box>
+            </Paper>
           ) : (
-            filteredLogs.map((log) => (
-              <div key={log._id} style={{ 
-                border: '1px solid #ddd', 
-                borderRadius: '8px', 
-                marginBottom: '30px', 
-                overflow: 'hidden',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                backgroundColor: 'white'
-              }}>
-                {/* Travel Log Image */}
-                {log.imageUrl && (
-                  <img 
-                    src={log.imageUrl} 
-                    alt={log.title} 
-                    style={{ width: '100%', height: '400px', objectFit: 'cover' }}
-                  />
-                )}
-                
-                <div style={{ padding: '20px' }}>
-                  {/* Travel Log Header with Unsave Button */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-                    <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: '0 0 10px 0', fontSize: '24px' }}>{log.title}</h3>
-                      
-                      <p style={{ margin: '0 0 15px 0', color: '#666', fontSize: '14px' }}>
-                        By <strong>{log.user?.username || 'Anonymous'}</strong> • {new Date(log.createdAt).toLocaleDateString()}
-                      </p>
-                    </div>
+            <Box className="logs-container">
+              {filteredLogs.map((log, index) => (
+                <Fade in timeout={500 + index * 100} key={log._id}>
+                  <Card className="saved-log-card" elevation={3}>
+                    {/* Travel Log Image */}
+                    {log.imageUrl && (
+                      <CardMedia
+                        component="img"
+                        height="400"
+                        image={log.imageUrl}
+                        alt={log.title}
+                        className="log-image"
+                      />
+                    )}
                     
-                    {/* Unsave Button */}
-                    <button
-                      onClick={() => handleUnsaveLog(log._id)}
-                      disabled={unsavingLogs[log._id]}
-                      style={{
-                        padding: '8px 16px',
-                        border: '2px solid #ff6b6b',
-                        borderRadius: '6px',
-                        backgroundColor: '#ff6b6b',
-                        color: 'white',
-                        cursor: unsavingLogs[log._id] ? 'not-allowed' : 'pointer',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        marginLeft: '15px'
-                      }}
-                      title="Remove from saved"
-                    >
-                      {unsavingLogs[log._id] ? (
-                        '⏳ Removing...'
-                      ) : (
-                        '❤️ Unsave'
-                      )}
-                    </button>
-                  </div>
-                  
-                  {/* Location */}
-                  <p style={{ color: '#1976d2', fontWeight: 'bold', margin: '0 0 15px 0', fontSize: '16px' }}>
-                    📍 {log.location}
-                  </p>
-                  
-                  {/* Description */}
-                  <p style={{ marginBottom: '15px', lineHeight: '1.7', fontSize: '16px' }}>{log.description}</p>
-                  
-                  {/* Tags */}
-                  {log.tags && log.tags.length > 0 && (
-                    <div style={{ marginBottom: '20px' }}>
-                      <strong style={{ fontSize: '14px', color: '#666' }}>Tags: </strong>
-                      {log.tags.map((tag, index) => (
-                        <span
-                          key={index}
-                          onClick={() => handleTagToggle(tag.toLowerCase())}
-                          style={{
-                            display: 'inline-block',
-                            padding: '4px 12px',
-                            margin: '2px 5px 2px 0',
-                            backgroundColor: filters.selectedTags.includes(tag.toLowerCase()) ? '#1976d2' : '#e3f2fd',
-                            border: '1px solid #1976d2',
-                            borderRadius: '20px',
-                            fontSize: '12px',
-                            color: filters.selectedTags.includes(tag.toLowerCase()) ? 'white' : '#1976d2',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                          title={`Click to ${filters.selectedTags.includes(tag.toLowerCase()) ? 'remove' : 'add'} filter`}
+                    <CardContent className="log-content">
+                      {/* Header with Unsave Button */}
+                      <Box className="log-header">
+                        <Box className="log-title-section">
+                          <Typography variant="h4" component="h2" className="log-title">
+                            {log.title}
+                          </Typography>
+                          
+                          <Stack direction="row" spacing={2} alignItems="center" className="log-meta">
+                            <Box className="author-info">
+                              <Person sx={{ fontSize: 16, mr: 0.5 }} />
+                              <Typography variant="body2">
+                                <strong>{log.user?.username || 'Anonymous'}</strong>
+                              </Typography>
+                            </Box>
+                            <Box className="date-info">
+                              <Schedule sx={{ fontSize: 16, mr: 0.5 }} />
+                              <Typography variant="body2">
+                                {new Date(log.createdAt).toLocaleDateString()}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </Box>
+                        
+                        {/* Unsave Button */}
+                        <Button
+                          variant="contained"
+                          color="error"
+                          startIcon={
+                            unsavingLogs[log._id] ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <BookmarkRemove />
+                            )
+                          }
+                          onClick={() => handleUnsaveLog(log._id)}
+                          disabled={unsavingLogs[log._id]}
+                          className="unsave-button"
                         >
-                          {tag} {filters.selectedTags.includes(tag.toLowerCase()) ? '✓' : ''}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #eee' }} />
-                  
-                  {/* Comments Toggle Button */}
-                  <button
-                    onClick={() => toggleComments(log._id)}
-                    style={{ 
-                      padding: '10px 20px', 
-                      backgroundColor: '#f5f5f5', 
-                      color: '#1976d2', 
-                      border: '1px solid #ddd', 
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    💬 {expandedComments[log._id] ? 'Hide Comments' : 'Show Comments'} {expandedComments[log._id] ? '🔼' : '🔽'}
-                  </button>
-                  
-                  {/* Comments Section */}
-                  {expandedComments[log._id] && (
-                    <Comments 
-                      logId={log._id}
-                      logOwnerId={log.user?._id}
-                      currentUserId={currentUserId}
-                      allowModeration={false}
-                    />
-                  )}
-                </div>
-              </div>
-            ))
+                          {unsavingLogs[log._id] ? 'Removing...' : 'Unsave'}
+                        </Button>
+                      </Box>
+                      
+                      {/* Location */}
+                      <Box className="location-section">
+                        <LocationOn color="primary" sx={{ mr: 1 }} />
+                        <Typography variant="h6" color="primary" className="location-text">
+                          {log.location}
+                        </Typography>
+                      </Box>
+                      
+                      {/* Description */}
+                      <Typography variant="body1" className="log-description">
+                        {log.description}
+                      </Typography>
+                      
+                      {/* Tags */}
+                      {log.tags && log.tags.length > 0 && (
+                        <Box className="tags-section">
+                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                            Tags:
+                          </Typography>
+                          <Box className="tags-container">
+                            {log.tags.map((tag, index) => (
+                              <Chip
+                                key={index}
+                                label={tag}
+                                size="small"
+                                clickable
+                                variant={filters.selectedTags.includes(tag.toLowerCase()) ? "filled" : "outlined"}
+                                color={filters.selectedTags.includes(tag.toLowerCase()) ? "primary" : "default"}
+                                onClick={() => handleTagToggle(tag.toLowerCase())}
+                                className="log-tag"
+                              />
+                            ))}
+                          </Box>
+                        </Box>
+                      )}
+                      
+                      <Divider sx={{ my: 2 }} />
+                      
+                      {/* Comments Toggle Button */}
+                      <Button
+                        variant="outlined"
+                        startIcon={<Comment />}
+                        endIcon={expandedComments[log._id] ? <ExpandLess /> : <ExpandMore />}
+                        onClick={() => toggleComments(log._id)}
+                        className="comments-toggle-btn"
+                      >
+                        {expandedComments[log._id] ? 'Hide Comments' : 'Show Comments'}
+                      </Button>
+                      
+                      {/* Comments Section */}
+                      <Collapse in={expandedComments[log._id]}>
+                        <Box className="comments-section">
+                          <Comments 
+                            logId={log._id}
+                            logOwnerId={log.user?._id}
+                            currentUserId={currentUserId}
+                            allowModeration={false}
+                          />
+                        </Box>
+                      </Collapse>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              ))}
+            </Box>
           )}
-        </div>
+        </Box>
       )}
-    </div>
+    </Container>
   );
 }
 
 export default SavedLogs;
-
-
-
-
-
-
