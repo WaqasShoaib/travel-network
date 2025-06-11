@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from '../utils/axios';
 import EmojiPicker from 'emoji-picker-react';
+import './Comments.css'; // Import the enhanced CSS
 
-function Comments({ logId, logOwnerId, currentUserId, allowModeration = false }) {
+const Comments = ({ logId, logOwnerId, currentUserId, allowModeration = false }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -10,6 +11,10 @@ function Comments({ logId, logOwnerId, currentUserId, allowModeration = false })
   const [loading, setLoading] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showEditEmojiPicker, setShowEditEmojiPicker] = useState(false);
+  
+  // Refs for click outside detection
+  const emojiPickerRef = useRef(null);
+  const editEmojiPickerRef = useRef(null);
 
   // Fetch comments for the specific log
   useEffect(() => {
@@ -26,6 +31,34 @@ function Comments({ logId, logOwnerId, currentUserId, allowModeration = false })
       fetchComments();
     }
   }, [logId]);
+
+  // Close emoji pickers when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+      if (editEmojiPickerRef.current && !editEmojiPickerRef.current.contains(event.target)) {
+        setShowEditEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close emoji picker when pressing Escape
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowEmojiPicker(false);
+        setShowEditEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -145,117 +178,53 @@ function Comments({ logId, logOwnerId, currentUserId, allowModeration = false })
     return isOwner || isPostOwner;
   };
 
-  const commentStyle = {
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    padding: '15px',
-    marginBottom: '15px',
-    backgroundColor: '#f9f9f9'
-  };
-
-  const buttonStyle = {
-    padding: '5px 10px',
-    margin: '0 5px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    backgroundColor: 'white',
-    cursor: 'pointer',
-    fontSize: '12px'
-  };
-
-  const textareaStyle = {
-    width: '100%',
-    padding: '10px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    resize: 'vertical'
-  };
-
-  const emojiButtonStyle = {
-    padding: '8px 12px',
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    backgroundColor: '#f5f5f5',
-    cursor: 'pointer',
-    fontSize: '16px',
-    marginLeft: '10px'
-  };
+  const quickEmojis = ['👍', '❤️', '😂', '😮', '😢', '🎉'];
 
   return (
-    <div style={{ marginTop: '20px' }}>
-      <h4>Comments ({comments.length})</h4>
+    <div className="comments-container">
+      <h4 className="comments-header">
+        💬 Comments
+        <span className="comments-count">{comments.length}</span>
+      </h4>
 
       {/* Add Comment Form */}
-      <div style={{ ...commentStyle, backgroundColor: '#fff' }}>
+      <div className="new-comment-form">
         <form onSubmit={handleSubmit}>
-          <div style={{ position: 'relative' }}>
-            <textarea
-              style={{ ...textareaStyle, minHeight: '80px' }}
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment... 😊"
-            />
-            
-            {/* Emoji Picker for New Comment */}
-            {showEmojiPicker && (
-              <div style={{
-                position: 'absolute',
-                top: '90px',
-                right: '0',
-                zIndex: 1000,
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-              }}>
-                <EmojiPicker
-                  onEmojiClick={handleEmojiClick}
-                  width={300}
-                  height={400}
-                />
-              </div>
-            )}
-          </div>
+          <textarea
+            className="comment-textarea"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Share your thoughts... What did you think about this adventure? 🌟"
+            rows={3}
+          />
           
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-            <button 
-              type="submit" 
-              disabled={loading || !newComment.trim()}
-              style={{
-                ...buttonStyle,
-                backgroundColor: '#1976d2',
-                color: 'white',
-                padding: '8px 16px'
-              }}
-            >
-              {loading ? 'Posting...' : 'Post Comment'}
-            </button>
+          <div className="form-actions">
+            <div className="primary-actions">
+              <button 
+                type="submit" 
+                disabled={loading || !newComment.trim()}
+                className={`submit-button ${loading ? 'loading' : ''}`}
+              >
+                <span>{loading ? '✨ Posting...' : '🚀 Post Comment'}</span>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className={`emoji-toggle-button ${showEmojiPicker ? 'active' : ''}`}
+                title="Add emoji"
+              >
+                😀
+              </button>
+            </div>
             
-            <button
-              type="button"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              style={emojiButtonStyle}
-              title="Add emoji"
-            >
-              😀
-            </button>
-            
-            {/* Quick Emoji Shortcuts */}
-            <div style={{ marginLeft: '10px' }}>
-              {['👍', '❤️', '😂', '😮', '😢', '😡'].map((emoji) => (
+            <div className="quick-emojis">
+              {quickEmojis.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
                   onClick={() => setNewComment(prev => prev + emoji)}
-                  style={{
-                    padding: '4px 8px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    cursor: 'pointer',
-                    fontSize: '16px'
-                  }}
+                  className="quick-emoji"
                   title={`Add ${emoji}`}
                 >
                   {emoji}
@@ -266,118 +235,150 @@ function Comments({ logId, logOwnerId, currentUserId, allowModeration = false })
         </form>
       </div>
 
-      {/* Comments List */}
-      {comments.length === 0 ? (
-        <p style={{ color: '#666', textAlign: 'center', padding: '20px' }}>
-          No comments yet. Be the first to comment! 💬
-        </p>
-      ) : (
-        comments.map((comment) => (
-          <div key={comment._id} style={commentStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: '0 0 5px 0', fontWeight: 'bold', color: '#1976d2' }}>
-                  {comment.user.username}
-                  {allowModeration && currentUserId === logOwnerId && currentUserId !== comment.user._id && (
-                    <span style={{ fontSize: '11px', color: '#666', fontWeight: 'normal', marginLeft: '10px' }}>
-                      (You can moderate this comment)
-                    </span>
-                  )}
-                </p>
-                
-                {editingId === comment._id ? (
-                  <div style={{ position: 'relative' }}>
-                    <textarea
-                      style={{ ...textareaStyle, minHeight: '60px', marginBottom: '10px' }}
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                    />
-                    
-                    {/* Emoji Picker for Edit */}
-                    {showEditEmojiPicker && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '70px',
-                        right: '0',
-                        zIndex: 1000,
-                        border: '1px solid #ddd',
-                        borderRadius: '8px',
-                        backgroundColor: 'white',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-                      }}>
-                        <EmojiPicker
-                          onEmojiClick={handleEditEmojiClick}
-                          width={300}
-                          height={400}
-                        />
-                      </div>
-                    )}
-                    
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <button 
-                        onClick={() => handleUpdate(comment._id)}
-                        disabled={loading || !editText.trim()}
-                        style={{ ...buttonStyle, backgroundColor: '#4caf50', color: 'white' }}
-                      >
-                        💾 Save
-                      </button>
-                      <button 
-                        onClick={cancelEdit}
-                        disabled={loading}
-                        style={buttonStyle}
-                      >
-                        ❌ Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowEditEmojiPicker(!showEditEmojiPicker)}
-                        style={emojiButtonStyle}
-                        title="Add emoji"
-                      >
-                        😀
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <p style={{ margin: '0 0 10px 0', lineHeight: '1.5', fontSize: '15px' }}>
-                    {comment.text}
-                  </p>
-                )}
-                
-                <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
-                  {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString()}
-                </p>
-              </div>
+      {/* Emoji Picker for New Comment - Fixed Overlay */}
+      {showEmojiPicker && (
+        <>
+          <div 
+            className="emoji-picker-backdrop" 
+            onClick={() => setShowEmojiPicker(false)}
+          />
+          <div ref={emojiPickerRef} className="emoji-picker-overlay">
+            <EmojiPicker
+              onEmojiClick={handleEmojiClick}
+              width={350}
+              height={450}
+              searchDisabled={false}
+              skinTonesDisabled={false}
+              previewConfig={{
+                showPreview: true,
+                defaultCaption: "Pick the perfect emoji!",
+                defaultEmoji: "1f60a"
+              }}
+            />
+          </div>
+        </>
+      )}
 
-              {/* Action Buttons */}
-              {currentUserId && (
-                <div style={{ marginLeft: '15px' }}>
-                  {canEditComment(comment) && editingId !== comment._id && (
+      {/* Comments List */}
+      <div className="comments-list">
+        {comments.length === 0 ? (
+          <div className="no-comments">
+            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>💭</div>
+            <div>No comments yet. Be the first to share your thoughts!</div>
+            <div style={{ fontSize: '0.9rem', marginTop: '5px', opacity: 0.7 }}>
+              Start a conversation about this amazing travel experience
+            </div>
+          </div>
+        ) : (
+          comments.map((comment) => (
+            <div key={comment._id} className={`comment-item ${loading ? 'loading' : ''}`}>
+              <div className="comment-header">
+                <div className="comment-author">
+                  <p className="username">
+                    👤 {comment.user.username}
+                    {allowModeration && currentUserId === logOwnerId && currentUserId !== comment.user._id && (
+                      <span className="moderation-badge">Moderator Access</span>
+                    )}
+                  </p>
+                  <p className="comment-timestamp">
+                    📅 {new Date(comment.createdAt).toLocaleDateString()} at {new Date(comment.createdAt).toLocaleTimeString()}
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                {currentUserId && (
+                  <div className="comment-actions">
+                    {canEditComment(comment) && editingId !== comment._id && (
+                      <button 
+                        onClick={() => handleEdit(comment)}
+                        disabled={loading}
+                        className="action-button edit"
+                      >
+                        ✏️ Edit
+                      </button>
+                    )}
+                    {canDeleteComment(comment) && (
+                      <button 
+                        onClick={() => handleDelete(comment._id, comment.user._id)}
+                        disabled={loading}
+                        className="action-button delete"
+                      >
+                        🗑️ Delete
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              {editingId === comment._id ? (
+                <div className="edit-form">
+                  <textarea
+                    className="edit-textarea"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    rows={3}
+                  />
+                  
+                  <div className="edit-actions">
                     <button 
-                      onClick={() => handleEdit(comment)}
-                      disabled={loading}
-                      style={buttonStyle}
+                      onClick={() => handleUpdate(comment._id)}
+                      disabled={loading || !editText.trim()}
+                      className="action-button save"
                     >
-                      ✏️ Edit
+                      💾 Save Changes
                     </button>
-                  )}
-                  {canDeleteComment(comment) && (
                     <button 
-                      onClick={() => handleDelete(comment._id, comment.user._id)}
+                      onClick={cancelEdit}
                       disabled={loading}
-                      style={{ ...buttonStyle, color: '#d32f2f' }}
+                      className="action-button cancel"
                     >
-                      🗑️ Delete
+                      ❌ Cancel
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setShowEditEmojiPicker(!showEditEmojiPicker)}
+                      className={`emoji-toggle-button ${showEditEmojiPicker ? 'active' : ''}`}
+                      title="Add emoji"
+                    >
+                      😀
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="comment-content">
+                  {comment.text}
                 </div>
               )}
             </div>
+          ))
+        )}
+      </div>
+
+      {/* Emoji Picker for Edit Comment - Fixed Overlay */}
+      {showEditEmojiPicker && (
+        <>
+          <div 
+            className="emoji-picker-backdrop" 
+            onClick={() => setShowEditEmojiPicker(false)}
+          />
+          <div ref={editEmojiPickerRef} className="emoji-picker-overlay">
+            <EmojiPicker
+              onEmojiClick={handleEditEmojiClick}
+              width={350}
+              height={450}
+              searchDisabled={false}
+              skinTonesDisabled={false}
+              previewConfig={{
+                showPreview: true,
+                defaultCaption: "Pick the perfect emoji!",
+                defaultEmoji: "1f60a"
+              }}
+            />
           </div>
-        ))
+        </>
       )}
     </div>
   );
-}
+};
 
 export default Comments;

@@ -238,7 +238,7 @@ function AllLogs() {
       {/* Header */}
       <Box className="header-section">
         <Typography variant="h3" component="h1" className="page-title">
-          All Travel Logs ({filteredLogs.length})
+          All Travel Logs 
         </Typography>
         {currentUserId && (
           <Typography variant="body2" className="header-tip">
