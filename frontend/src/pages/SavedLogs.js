@@ -32,7 +32,6 @@ import {
   Schedule,
   Person,
   Favorite,
-  FavoriteBorder,
   Comment,
   Explore,
   BookmarkRemove,

@@ -19,7 +19,6 @@ import {
   Badge,
   CircularProgress,
   Collapse,
-  IconButton,
   Stack
 } from '@mui/material';
 import {
@@ -30,7 +29,6 @@ import {
   LocationOn,
   Schedule,
   Person,
-  Bookmark,
   BookmarkBorder,
   Comment,
   Favorite,

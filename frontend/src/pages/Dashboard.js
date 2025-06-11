@@ -16,7 +16,6 @@ import {
   Divider,
   Paper,
   Stack,
-  Badge,
   CircularProgress,
   Fade,
   Alert
