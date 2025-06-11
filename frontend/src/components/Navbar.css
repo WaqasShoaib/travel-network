@@ -1,118 +1,123 @@
-/* Navbar.css - Professional Travel Network Navbar Styling */
+/* Navbar.css - Enhanced Version */
 
-/* Using same CSS variables for consistency */
-:root {
-  --primary-color: #059669;
-  --primary-hover: #047857;
-  --secondary-color: #78716c;
-  --accent-color: #f97316;
-  --success-color: #10b981;
-  --warm-gold: #fbbf24;
-  --earth-brown: #92400e;
-  --sage-green: #6b7280;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-light: #9ca3af;
-  --background-primary: #ffffff;
-  --background-secondary: #fefdf8;
-  --background-accent: #f7f6f3;
-  --background-warm: #fef7ed;
-  --border-light: #e5e7eb;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-}
-
-/* Ensure content doesn't get hidden behind sticky navbar */
-body {
-  margin: 0;
-  padding: 0;
-}
-
-/* Navbar Container */
-.navbar-container {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #065f46 50%, var(--earth-brown) 100%) !important;
-  box-shadow: var(--shadow-lg) !important;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+/* AppBar styling with gradient and glassmorphism */
+.navbar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
   backdrop-filter: blur(10px);
-  position: sticky !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  position: fixed !important;
   top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
   z-index: 1100 !important;
-  contain: layout;
-  width: 100%;
+  overflow: hidden;
+  min-height: 80px !important;
 }
 
-.navbar-container::before {
+/* Animated background effect */
+.navbar::before {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-color), var(--warm-gold), var(--accent-color));
-  opacity: 0.8;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  animation: shimmer 3s infinite;
+  z-index: 0;
 }
 
-/* Toolbar */
-.navbar-toolbar {
-  justify-content: space-between !important;
-  padding: 0.75rem 1rem !important;
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Ensure content stays above background animation */
+.navbar .MuiToolbar-root {
+  position: relative;
+  z-index: 1;
+  min-height: 80px !important;
+  padding: 12px 24px !important;
+}
+
+/* Add padding to body to prevent content from hiding behind fixed navbar */
+body {
+  padding-top: 80px;
+}
+
+/* Sticky navbar scroll effects */
+.navbar.scrolled {
   min-height: 70px !important;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* Brand/Logo */
-.navbar-brand {
-  text-decoration: none !important;
+.navbar.scrolled .MuiToolbar-root {
+  min-height: 70px !important;
+  padding: 8px 24px !important;
+}
+
+/* Logo styling with enhanced animations */
+.logo {
+  text-decoration: none;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 2.1rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Travel logo icon styling */
+.logo-icon {
+  font-size: 2.4rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo:hover .logo-icon {
+  transform: rotate(180deg) scale(1.1);
+  filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.6));
+}
+
+.logo:hover .logo-icon svg {
+  filter: drop-shadow(0 6px 12px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 20px rgba(255, 255, 255, 0.4));
+}
+
+.logo:hover {
+  color: #ffd700;
+  transform: translateY(-2px) scale(1.05);
+  text-shadow: 0 4px 8px rgba(255, 215, 0, 0.4);
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+}
+
+/* Navigation Button styling with modern effects */
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   color: white !important;
-  font-weight: 800 !important;
-  font-size: 1.5rem !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
-  transition: all 0.3s ease !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.navbar-brand:hover {
-  color: var(--warm-gold) !important;
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-}
-
-/* Navigation Links Container */
-.navbar-links {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.5rem !important;
-}
-
-/* Base Button Styling - Consistent for all buttons */
-.navbar-button {
-  font-weight: 600 !important;
-  border-radius: var(--radius-lg) !important;
-  padding: 0.625rem 1.25rem !important;
-  transition: all 0.3s ease !important;
-  color: white !important;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px !important;
+  padding: 8px 16px !important;
   text-transform: none !important;
-  font-family: inherit !important;
-  border: 2px solid rgba(255, 255, 255, 0.3) !important;
-  backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.navbar-button::before {
+/* Button hover effects with glassmorphism */
+.nav-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -121,291 +126,203 @@ body {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s ease;
+  z-index: 0;
 }
 
-.navbar-button:hover::before {
+.nav-button:hover::before {
   left: 100%;
 }
 
-.navbar-button:hover {
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.25) !important;
-  border-color: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Login Button - Special orange border */
-.login-button {
-  border-color: var(--warm-gold) !important;
+.nav-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
-.login-button:hover {
-  border-color: var(--accent-color) !important;
-}
-
-/* Register Button - Special green gradient */
-.register-button {
-  background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-color) 100%) !important;
-  border-color: var(--success-color) !important;
-  font-weight: 700 !important;
-}
-
-.register-button:hover {
-  background: linear-gradient(135deg, #059669 0%, var(--primary-hover) 100%) !important;
-  border-color: #059669 !important;
-}
-
-.public-button:hover {
-  background: rgba(16, 185, 129, 0.3) !important;
-  border-color: rgba(16, 185, 129, 0.4) !important;
-  color: #a7f3d0 !important;
-}
-
-/* Dashboard Button */
-.dashboard-button {
-  background: rgba(59, 130, 246, 0.2) !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
-}
-
-.dashboard-button:hover {
-  background: rgba(59, 130, 246, 0.3) !important;
-  border-color: rgba(59, 130, 246, 0.4) !important;
-  color: #bfdbfe !important;
-}
-
-/* Create Button */
-.create-button {
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--warm-gold) 100%) !important;
-  border-color: var(--accent-color) !important;
-  font-weight: 700 !important;
-}
-
-.create-button:hover {
-  background: linear-gradient(135deg, #ea580c 0%, #d97706 100%) !important;
-  border-color: #ea580c !important;
-  color: white !important;
-}
-
-/* Saved Button */
+/* Saved Button with unique glassmorphism styling */
 .saved-button {
-  background: rgba(239, 68, 68, 0.2) !important;
-  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: rgba(76, 175, 80, 0.3) !important;
+  border: 1px solid rgba(76, 175, 80, 0.5) !important;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.2);
 }
 
 .saved-button:hover {
-  background: rgba(239, 68, 68, 0.3) !important;
-  border-color: rgba(239, 68, 68, 0.4) !important;
-  color: #fecaca !important;
+  background: rgba(76, 175, 80, 0.5) !important;
+  border: 1px solid rgba(76, 175, 80, 0.7) !important;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+  transform: translateY(-3px);
 }
 
-/* Login Button */
-.login-button {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: var(--warm-gold) !important;
-}
-
-.login-button:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
-  border-color: var(--accent-color) !important;
-}
-
-/* Register Button */
-.register-button {
-  background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-color) 100%) !important;
-  border-color: var(--success-color) !important;
-  font-weight: 700 !important;
-}
-
-.register-button:hover {
-  background: linear-gradient(135deg, #059669 0%, var(--primary-hover) 100%) !important;
-  border-color: #059669 !important;
-}
-
-/* Logout Button */
+/* Logout Button with enhanced styling */
 .logout-button {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
-  border-color: #dc2626 !important;
-  margin-left: 0.5rem !important;
-  font-weight: 700 !important;
+  background: rgba(244, 67, 54, 0.3) !important;
+  border: 1px solid rgba(244, 67, 54, 0.5) !important;
+  box-shadow: 0 4px 15px rgba(244, 67, 54, 0.2);
 }
 
 .logout-button:hover {
-  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
-  border-color: #b91c1c !important;
+  background: rgba(244, 67, 54, 0.6) !important;
+  border: 1px solid rgba(244, 67, 54, 0.8) !important;
+  box-shadow: 0 8px 25px rgba(244, 67, 54, 0.4);
+  transform: translateY(-3px);
 }
 
-/* Mobile Navigation */
-.navbar-mobile {
-  display: flex !important;
-  gap: 0.5rem;
+/* Enhanced icon styling with animations */
+.MuiButton-startIcon {
+  font-size: 1.3rem !important;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
-/* Mobile Icon Buttons */
-.navbar-icon-button {
-  color: white !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-radius: var(--radius-md) !important;
-  margin: 0 0.25rem !important;
-  transition: all 0.3s ease !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+.nav-button:hover .MuiButton-startIcon {
+  transform: rotate(5deg) scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 
-.navbar-icon-button:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+/* Special icon animations */
+.nav-button:hover .MuiSvgIcon-root[data-testid="HomeIcon"] {
+  animation: bounce 0.6s ease;
 }
 
-/* Responsive Design */
-@media (max-width: 900px) {
-  .navbar-toolbar {
-    padding: 0.5rem 0.75rem !important;
-  }
-
-  .navbar-brand {
-    font-size: 1.25rem !important;
-    padding: 0.375rem 0.75rem !important;
-  }
-
-  .navbar-button {
-    padding: 0.5rem 1rem !important;
-    font-size: 0.875rem !important;
-  }
+.nav-button:hover .MuiSvgIcon-root[data-testid="CreateIcon"] {
+  animation: pulse 0.6s ease;
 }
 
-@media (max-width: 600px) {
-  .navbar-toolbar {
-    min-height: 64px !important;
-  }
-
-  .navbar-brand {
-    font-size: 1.125rem !important;
-  }
-
-  .navbar-button {
-    padding: 0.375rem 0.75rem !important;
-    font-size: 0.8rem !important;
-  }
-
-  /* Better spacing for all states */
-  .navbar-links {
-    gap: 0.5rem !important;
-  }
+.nav-button:hover .MuiSvgIcon-root[data-testid="BookmarkIcon"] {
+  animation: wiggle 0.6s ease;
 }
 
-@media (max-width: 480px) {
-  .navbar-toolbar {
-    padding: 0.375rem 0.5rem !important;
-  }
-
-  .navbar-brand {
-    font-size: 1rem !important;
-    padding: 0.25rem 0.5rem !important;
-  }
-
-  .navbar-button {
-    padding: 0.25rem 0.5rem !important;
-    font-size: 0.75rem !important;
-  }
-
-  /* Stack buttons vertically on very small screens if needed */
-  .navbar-links {
-    flex-wrap: wrap;
-  }
+@keyframes bounce {
+  0%, 20%, 60%, 100% { transform: translateY(0) rotate(0deg); }
+  40% { transform: translateY(-8px) rotate(5deg); }
+  80% { transform: translateY(-4px) rotate(3deg); }
 }
 
-/* Accessibility improvements */
-@media (prefers-reduced-motion: reduce) {
-  .navbar-button,
-  .navbar-brand,
-  .navbar-icon-button {
-    transition: none !important;
-  }
-
-  .navbar-button::before {
-    display: none !important;
-  }
+@keyframes pulse {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.2) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }
 
-/* Focus styles for accessibility */
-.navbar-button:focus,
-.navbar-brand:focus,
-.navbar-icon-button:focus {
-  outline: 2px solid var(--warm-gold) !important;
-  outline-offset: 2px !important;
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
 }
 
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  .navbar-container {
-    background: #064e3b !important;
-    border-bottom: 3px solid white !important;
+/* Mobile responsiveness with enhanced effects */
+@media screen and (max-width: 900px) {
+  body {
+    padding-top: 70px;
   }
   
-  .navbar-button,
-  .navbar-brand,
-  .navbar-icon-button {
-    border: 2px solid white !important;
+  .navbar {
+    min-height: 70px !important;
+  }
+  
+  .navbar .MuiToolbar-root {
+    min-height: 70px !important;
+    padding: 8px 16px !important;
+  }
+  
+  .logo {
+    font-size: 1.8rem;
+    gap: 10px;
+  }
+  
+  .logo-icon {
+    font-size: 2rem;
+  }
+
+  .nav-button {
+    font-size: 0.9rem;
+    padding: 6px 12px !important;
+    gap: 6px;
+  }
+
+  .MuiButton-startIcon {
+    font-size: 1.1rem !important;
   }
 }
 
-/* Active state for current page */
-.navbar-button.active {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
-  color: var(--warm-gold) !important;
+@media screen and (max-width: 600px) {
+  body {
+    padding-top: 65px;
+  }
+  
+  .navbar {
+    padding: 0 8px;
+    min-height: 65px !important;
+  }
+  
+  .navbar .MuiToolbar-root {
+    min-height: 65px !important;
+    padding: 6px 12px !important;
+  }
+
+  .logo {
+    font-size: 1.5rem;
+    gap: 8px;
+  }
+  
+  .logo-icon {
+    font-size: 1.7rem;
+  }
+
+  .nav-button {
+    font-size: 0.85rem;
+    padding: 5px 10px !important;
+    min-width: auto !important;
+  }
+
+  /* Hide text on very small screens, keep icons */
+  .nav-button .MuiButton-label {
+    display: none;
+  }
+
+  .nav-button {
+    width: 44px;
+    height: 44px;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    min-width: 44px !important;
+  }
+
+  .MuiButton-startIcon {
+    margin: 0 !important;
+    font-size: 1.2rem !important;
+  }
 }
 
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
+/* Accessibility enhancements */
+.nav-button:focus {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.3);
 }
 
-/* Button text enhancement */
-.navbar-button .MuiButton-startIcon {
-  margin-right: 0.5rem !important;
-  transition: transform 0.3s ease !important;
-}
-
-.navbar-button:hover .MuiButton-startIcon {
-  transform: scale(1.1);
-}
-
-/* Brand emoji animation */
-.navbar-brand:hover {
-  animation: brandBounce 0.6s ease-in-out;
-}
-
-@keyframes brandBounce {
-  0%, 100% { transform: translateY(-1px); }
-  50% { transform: translateY(-3px); }
-}
-
-/* Navbar shadow enhancement */
-.navbar-container {
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset !important;
-}
-
-/* Loading animation for buttons */
-.navbar-button.loading {
+/* Loading state animation */
+.nav-button.loading {
   pointer-events: none;
   opacity: 0.7;
 }
 
-.navbar-button.loading::after {
+.nav-button.loading::after {
   content: '';
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
   border: 2px solid transparent;
-  border-top: 2px solid currentColor;
+  border-top: 2px solid #fff;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -413,4 +330,33 @@ html {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Tooltip-like effect for better UX */
+.nav-button {
+  position: relative;
+}
+
+.nav-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+
+.nav-button:hover::after {
+  opacity: 1;
+  visibility: visible;
+  bottom: -30px;
 }
