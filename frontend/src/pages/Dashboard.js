@@ -13,7 +13,13 @@ import {
   Container,
   Grid,
   Collapse,
-  Divider
+  Divider,
+  Paper,
+  Stack,
+  Badge,
+  CircularProgress,
+  Fade,
+  Alert
 } from '@mui/material';
 import { 
   Edit, 
@@ -21,8 +27,14 @@ import {
   Comment as CommentIcon, 
   ExpandMore, 
   ExpandLess,
-  Add as AddIcon
+  Add as AddIcon,
+  LocationOn,
+  Schedule,
+  Photo,
+  Dashboard as DashboardIcon,
+  Article
 } from '@mui/icons-material';
+import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -30,6 +42,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedComments, setExpandedComments] = useState({});
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [error, setError] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState({});
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -44,6 +58,7 @@ function Dashboard() {
       setCurrentUserId(payload.id);
     } catch (err) {
       console.error('Error parsing token:', err);
+      setError('Invalid session. Please log in again.');
     }
 
     const fetchPersonalLogs = async () => {
@@ -56,6 +71,8 @@ function Dashboard() {
         console.error('Error fetching personal logs:', err);
         if (err.response?.status === 401) {
           navigate('/login');
+        } else {
+          setError('Failed to load your travel logs. Please try again.');
         }
       } finally {
         setLoading(false);
@@ -74,6 +91,7 @@ function Dashboard() {
 
     const confirmDelete = window.confirm('Are you sure you want to delete this travel log? This will also delete all comments on this post.');
     if (confirmDelete) {
+      setDeleteLoading(prev => ({ ...prev, [id]: true }));
       try {
         await axios.delete(`/travellogs/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -82,6 +100,8 @@ function Dashboard() {
       } catch (err) {
         console.error('Error deleting log:', err);
         alert('Failed to delete log. Please try again.');
+      } finally {
+        setDeleteLoading(prev => ({ ...prev, [id]: false }));
       }
     }
   };
@@ -99,158 +119,261 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <Container>
-        <Typography variant="h6" sx={{ mt: 4, textAlign: 'center' }}>
-          Loading your travel logs...
-        </Typography>
+      <Container maxWidth="lg" className="loading-container">
+        <Paper className="loading-paper" elevation={2}>
+          <CircularProgress size={60} className="loading-spinner" />
+          <Typography variant="h5" className="loading-text">
+            Loading your travel logs...
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Preparing your adventure dashboard
+          </Typography>
+        </Paper>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" className="error-container">
+        <Alert severity="error" className="error-alert">
+          {error}
+        </Alert>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, pb: 4 }}>
-      {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h4">
-          Your Travel Logs
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/create-log')}
-        >
-          Create New Log
-        </Button>
-      </Box>
+    <Container maxWidth="lg" className="dashboard-container">
+      {/* Header Section */}
+      <Paper className="dashboard-header" elevation={2}>
+        <Box className="header-content">
+          <Box className="header-title-section">
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <DashboardIcon className="dashboard-icon" />
+              <Box>
+                <Typography variant="h3" component="h1" className="page-title">
+                  Your Travel Logs
+                </Typography>
+                <Typography variant="body1" color="text.secondary" className="page-subtitle">
+                  Manage and share your travel adventures
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+          
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={() => navigate('/create-log')}
+            className="create-button"
+          >
+            Create New Log
+          </Button>
+        </Box>
 
+        {/* Stats Section */}
+        {logs.length > 0 && (
+          <Box className="stats-section">
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={4}>
+                <Paper className="stat-card">
+                  <Article className="stat-icon" />
+                  <Typography variant="h4" className="stat-number">
+                    {logs.length}
+                  </Typography>
+                  <Typography variant="body2" className="stat-label">
+                    Travel Logs
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper className="stat-card">
+                  <LocationOn className="stat-icon" />
+                  <Typography variant="h4" className="stat-number">
+                    {new Set(logs.map(log => log.location)).size}
+                  </Typography>
+                  <Typography variant="body2" className="stat-label">
+                    Destinations
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} sm={4}>
+                <Paper className="stat-card">
+                  <Photo className="stat-icon" />
+                  <Typography variant="h4" className="stat-number">
+                    {logs.filter(log => log.imageUrl).length}
+                  </Typography>
+                  <Typography variant="body2" className="stat-label">
+                    Photos Shared
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Box>
+        )}
+      </Paper>
+
+      {/* Main Content */}
       {logs.length === 0 ? (
-        <Card sx={{ textAlign: 'center', py: 6 }}>
-          <CardContent>
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              You haven't created any travel logs yet!
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              Start documenting your adventures and share them with the world.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => navigate('/create-log')}
-            >
-              Create Your First Log
-            </Button>
-          </CardContent>
-        </Card>
+        <Fade in timeout={500}>
+          <Paper className="empty-state" elevation={3}>
+            <Box className="empty-state-content">
+              <DashboardIcon className="empty-state-icon" />
+              <Typography variant="h4" className="empty-state-title">
+                Ready for Your First Adventure?
+              </Typography>
+              <Typography variant="body1" color="text.secondary" className="empty-state-subtitle">
+                Start documenting your travels and share your amazing experiences with fellow adventurers around the world.
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<AddIcon />}
+                onClick={() => navigate('/create-log')}
+                className="empty-state-button"
+              >
+                Create Your First Log
+              </Button>
+            </Box>
+          </Paper>
+        </Fade>
       ) : (
-        <Grid container spacing={3}>
-          {logs.map((log) => (
-            <Grid item xs={12} key={log._id}>
-              <Card elevation={3}>
+        <Box className="logs-container">
+          {logs.map((log, index) => (
+            <Fade in timeout={500 + index * 100} key={log._id}>
+              <Card className="travel-log-card" elevation={3}>
                 {/* Travel Log Image */}
                 {log.imageUrl && (
                   <CardMedia
                     component="img"
-                    height="300"
+                    height="350"
                     image={log.imageUrl}
                     alt={log.title}
-                    sx={{ objectFit: 'cover' }}
+                    className="log-image"
                   />
                 )}
                 
-                <CardContent>
+                <CardContent className="log-content">
                   {/* Travel Log Header */}
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="h5" gutterBottom>
+                  <Box className="log-header">
+                    <Box className="log-title-section">
+                      <Typography variant="h4" component="h2" className="log-title">
                         {log.title}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Created on {new Date(log.createdAt).toLocaleDateString()}
-                      </Typography>
+                      <Stack direction="row" spacing={2} alignItems="center" className="log-meta">
+                        <Box className="meta-item">
+                          <Schedule className="meta-icon" />
+                          <Typography variant="body2">
+                            {new Date(log.createdAt).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </Typography>
+                        </Box>
+                      </Stack>
                     </Box>
                     
                     {/* Action Buttons */}
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Stack direction="row" spacing={1} className="action-buttons">
                       <Button
                         variant="outlined"
-                        size="small"
                         startIcon={<Edit />}
                         onClick={() => handleEdit(log._id)}
+                        className="edit-button"
+                        size="small"
                       >
                         Edit
                       </Button>
                       <Button
                         variant="outlined"
                         color="error"
-                        size="small"
-                        startIcon={<Delete />}
+                        startIcon={deleteLoading[log._id] ? <CircularProgress size={16} /> : <Delete />}
                         onClick={() => handleDelete(log._id)}
+                        disabled={deleteLoading[log._id]}
+                        className="delete-button"
+                        size="small"
                       >
-                        Delete
+                        {deleteLoading[log._id] ? 'Deleting...' : 'Delete'}
                       </Button>
-                    </Box>
+                    </Stack>
                   </Box>
                   
                   {/* Location */}
-                  <Typography variant="subtitle1" color="primary" gutterBottom>
-                    📍 {log.location}
-                  </Typography>
+                  <Box className="location-section">
+                    <LocationOn className="location-icon" />
+                    <Typography variant="h6" className="location-text">
+                      {log.location}
+                    </Typography>
+                  </Box>
                   
                   {/* Description */}
-                  <Typography variant="body1" paragraph>
+                  <Typography variant="body1" className="log-description">
                     {log.description}
                   </Typography>
                   
                   {/* Tags */}
                   {log.tags && log.tags.length > 0 && (
-                    <Box sx={{ mb: 2 }}>
-                      {log.tags.map((tag, index) => (
-                        <Chip
-                          key={index}
-                          label={tag}
-                          size="small"
-                          variant="outlined"
-                          sx={{ mr: 1, mb: 1 }}
-                        />
-                      ))}
+                    <Box className="tags-section">
+                      <Typography variant="body2" className="tags-label">
+                        Tags:
+                      </Typography>
+                      <Box className="tags-container">
+                        {log.tags.map((tag, index) => (
+                          <Chip
+                            key={index}
+                            label={tag}
+                            size="small"
+                            variant="outlined"
+                            color="primary"
+                            className="tag-chip"
+                          />
+                        ))}
+                      </Box>
                     </Box>
                   )}
                   
-                  <Divider sx={{ my: 2 }} />
+                  <Divider className="content-divider" />
                   
                   {/* Comments Management Section */}
-                  <Box>
+                  <Box className="comments-management">
                     <Button
                       onClick={() => toggleComments(log._id)}
                       startIcon={<CommentIcon />}
                       endIcon={expandedComments[log._id] ? <ExpandLess /> : <ExpandMore />}
                       variant="outlined"
-                      size="small"
+                      className="comments-toggle-button"
                     >
                       {expandedComments[log._id] ? 'Hide Comments' : 'Manage Comments'}
                     </Button>
                     
                     {expandedComments[log._id] && (
-                      <Typography variant="caption" display="block" sx={{ mt: 1, color: 'text.secondary' }}>
-                        💡 As the post owner, you can delete any inappropriate comments on your travel log
-                      </Typography>
+                      <Box className="moderation-tip">
+                        <Typography variant="caption" className="tip-text">
+                          💡 As the post owner, you can delete any inappropriate comments on your travel log
+                        </Typography>
+                      </Box>
                     )}
                   </Box>
                   
                   {/* Comments Section with Moderation */}
-                  <Collapse in={expandedComments[log._id]}>
-                    <Comments 
-                      logId={log._id}
-                      logOwnerId={currentUserId}
-                      currentUserId={currentUserId}
-                      allowModeration={true} // Enable comment moderation for own posts
-                    />
+                  <Collapse in={expandedComments[log._id]} className="comments-collapse">
+                    <Box className="comments-wrapper">
+                      <Comments 
+                        logId={log._id}
+                        logOwnerId={currentUserId}
+                        currentUserId={currentUserId}
+                        allowModeration={true}
+                      />
+                    </Box>
                   </Collapse>
                 </CardContent>
               </Card>
-            </Grid>
+            </Fade>
           ))}
-        </Grid>
+        </Box>
       )}
     </Container>
   );
