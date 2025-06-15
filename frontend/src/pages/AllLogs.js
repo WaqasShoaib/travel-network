@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ImageCarousel from '../components/ImageCarousel';
 import {
   Container,
   Card,
@@ -62,7 +63,7 @@ function AllLogs() {
         const res = await axios.get('/travellogs');
         setAllLogs(res.data);
         setFilteredLogs(res.data);
-        
+
         // Extract all unique tags
         const tags = new Set();
         res.data.forEach(log => {
@@ -113,7 +114,7 @@ function AllLogs() {
 
     // Location filter
     if (filters.location) {
-      filtered = filtered.filter(log => 
+      filtered = filtered.filter(log =>
         log.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
@@ -195,15 +196,15 @@ function AllLogs() {
 
     try {
       const isSaved = savedLogs.includes(logId);
-      
+
       if (isSaved) {
-        await axios.post('/user/unsave-log', 
+        await axios.post('/user/unsave-log',
           { logId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setSavedLogs(prev => prev.filter(id => id !== logId));
       } else {
-        await axios.post('/user/save-log', 
+        await axios.post('/user/save-log',
           { logId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
@@ -238,7 +239,7 @@ function AllLogs() {
       {/* Header */}
       <Box className="header-section">
         <Typography variant="h3" component="h1" className="page-title">
-          All Travel Logs 
+          All Travel Logs
         </Typography>
         {currentUserId && (
           <Typography variant="body2" className="header-tip">
@@ -386,16 +387,10 @@ function AllLogs() {
           {filteredLogs.map((log) => (
             <Card key={log._id} className="travel-log-card" elevation={3}>
               {/* Travel Log Image */}
-              {log.imageUrl && (
-                <CardMedia
-                  component="img"
-                  height="400"
-                  image={log.imageUrl}
-                  alt={log.title}
-                  className="log-image"
-                />
+              {log.images && log.images.length > 0 && (
+                <ImageCarousel images={log.images} height={400} />
               )}
-              
+
               <CardContent className="log-content">
                 {/* Header with Save Button */}
                 <Box className="log-header">
@@ -403,7 +398,7 @@ function AllLogs() {
                     <Typography variant="h4" component="h2" className="log-title">
                       {log.title}
                     </Typography>
-                    
+
                     <Stack direction="row" spacing={2} alignItems="center" className="log-meta">
                       <Box className="author-info">
                         <Person sx={{ fontSize: 16, mr: 0.5 }} />
@@ -419,7 +414,7 @@ function AllLogs() {
                       </Box>
                     </Stack>
                   </Box>
-                  
+
                   {/* Save Button or Own Post Indicator */}
                   {currentUserId && !isOwnPost(log) && (
                     <Button
@@ -441,7 +436,7 @@ function AllLogs() {
                       {isLogSaved(log._id) ? 'Saved' : 'Save'}
                     </Button>
                   )}
-                  
+
                   {isOwnPost(log) && (
                     <Chip
                       icon={<Person />}
@@ -452,7 +447,7 @@ function AllLogs() {
                     />
                   )}
                 </Box>
-                
+
                 {/* Location */}
                 <Box className="location-section">
                   <LocationOn color="primary" sx={{ mr: 1 }} />
@@ -460,12 +455,12 @@ function AllLogs() {
                     {log.location}
                   </Typography>
                 </Box>
-                
+
                 {/* Description */}
                 <Typography variant="body1" className="log-description">
                   {log.description}
                 </Typography>
-                
+
                 {/* Tags */}
                 {log.tags && log.tags.length > 0 && (
                   <Box className="tags-section">
@@ -488,9 +483,9 @@ function AllLogs() {
                     </Box>
                   </Box>
                 )}
-                
+
                 <Divider sx={{ my: 2 }} />
-                
+
                 {/* Comments Toggle Button */}
                 <Button
                   variant="outlined"
@@ -501,11 +496,11 @@ function AllLogs() {
                 >
                   {expandedComments[log._id] ? 'Hide Comments' : 'Show Comments'}
                 </Button>
-                
+
                 {/* Comments Section */}
                 <Collapse in={expandedComments[log._id]}>
                   <Box className="comments-section">
-                    <Comments 
+                    <Comments
                       logId={log._id}
                       logOwnerId={log.user?._id}
                       currentUserId={currentUserId}

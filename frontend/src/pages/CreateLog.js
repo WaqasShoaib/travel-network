@@ -35,9 +35,9 @@ function CreateLog() {
     description: '',
     location: '',
     tags: '',
-    image: null,
+    images: [],
   });
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -54,47 +54,59 @@ function CreateLog() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files).slice(0, 5);
+    const validImages = [];
+    // const previews = [];
+
+    for (const file of files) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setError('Please select a valid image file');
+        setError('One or more files are not valid images');
         return;
       }
-      
+
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image size should be less than 5MB');
+        setError('Each image must be less than 5MB');
         return;
       }
 
-      setFormData({
-        ...formData,
-        image: file,
-      });
+      validImages.push(file);
+    }
 
-      // Create preview
+    if (validImages.length === 0) {
+      setError('Please select at least one valid image');
+      return;
+    }
+
+    // Generate image previews
+    validImages.forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview((prev) => [...prev, reader.result]);
       };
       reader.readAsDataURL(file);
-      
-      if (error) setError('');
-    }
+    });
+
+    setFormData((prev) => ({
+      ...prev,
+      images: validImages,
+    }));
+
+    setError('');
   };
 
-  const removeImage = () => {
-    setFormData({
-      ...formData,
-      image: null,
-    });
-    setImagePreview(null);
-    // Reset file input using ref
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  // const removeImage = () => {
+  //   setFormData({
+  //     ...formData,
+  //     image: null,
+  //   });
+  //   setImagePreview(null);
+  //   // Reset file input using ref
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = '';
+  //   }
+  // };
 
   const validateForm = () => {
     if (!formData.title.trim()) {
@@ -114,7 +126,7 @@ function CreateLog() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -134,8 +146,19 @@ function CreateLog() {
     formDataToSend.append('description', formData.description.trim());
     formDataToSend.append('location', formData.location.trim());
     formDataToSend.append('tags', formData.tags.trim());
-    if (formData.image) {
-      formDataToSend.append('image', formData.image);
+
+    // 👇 Add the log here
+    console.log('🧾 Images selected for upload:', formData.images.length);
+
+    if (formData.images && formData.images.length > 0) {
+      formData.images.forEach((image) => {
+        formDataToSend.append('images', image);
+      });
+    }
+
+    console.log('🔼 Submitting travel log with images:', formData.images);
+    for (let pair of formDataToSend.entries()) {
+      console.log('🧾 FormData:', pair[0], pair[1]);
     }
 
     try {
@@ -145,7 +168,7 @@ function CreateLog() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      
+
       setSuccess('Travel log created successfully! Redirecting...');
       setTimeout(() => {
         navigate('/dashboard');
@@ -153,7 +176,7 @@ function CreateLog() {
     } catch (err) {
       console.error('Error creating travel log:', err);
       setError(
-        err.response?.data?.message || 
+        err.response?.data?.message ||
         'Failed to create travel log. Please try again.'
       );
     } finally {
@@ -164,7 +187,7 @@ function CreateLog() {
   // Helper to render tag chips preview
   const renderTagsPreview = () => {
     if (!formData.tags.trim()) return null;
-    
+
     const tags = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
     if (tags.length === 0) return null;
 
@@ -186,6 +209,18 @@ function CreateLog() {
         </Box>
       </Box>
     );
+  };
+
+  const removeImageAtIndex = (indexToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== indexToRemove),
+    }));
+    setImagePreview((prev) => prev.filter((_, i) => i !== indexToRemove));
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -292,61 +327,60 @@ function CreateLog() {
               <Box className="image-upload-section">
                 <Typography variant="h6" className="section-title">
                   <PhotoCamera sx={{ mr: 1 }} />
-                  Add a Photo
+                  Add Photos
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  Upload a beautiful image from your journey (optional, max 5MB)
+                  Upload up to 5 beautiful images from your journey (each max 5MB)
                 </Typography>
 
-                {!imagePreview ? (
-                  <Box className="upload-area">
-                    <input
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      ref={fileInputRef}
-                      type="file"
-                      onChange={handleImageChange}
-                    />
-                    <Button
-                      variant="outlined"
-                      component="label"
-                      startIcon={<CloudUpload />}
-                      className="upload-button"
-                      size="large"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Choose Image
-                    </Button>
-                  </Box>
-                ) : (
-                  <Card className="image-preview-card">
-                    <CardMedia
-                      component="img"
-                      height="300"
-                      image={imagePreview}
-                      alt="Preview"
-                      className="image-preview"
-                    />
-                    <Box className="image-actions">
-                      <Button
-                        variant="outlined"
-                        startIcon={<Close />}
-                        onClick={removeImage}
-                        size="small"
-                        color="error"
-                      >
-                        Remove Image
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={<PhotoCamera />}
-                        size="small"
-                        onClick={() => fileInputRef.current?.click()}
-                      >
-                        Change Image
-                      </Button>
-                    </Box>
-                  </Card>
+                <Box className="upload-area">
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleImageChange}
+                  />
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    startIcon={<CloudUpload />}
+                    className="upload-button"
+                    size="large"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={formData.images.length >= 5}
+                  >
+                    {formData.images.length >= 5 ? 'Limit Reached' : 'Choose Images'}
+                  </Button>
+                </Box>
+
+                {imagePreview.length > 0 && (
+                  <Grid container spacing={2} sx={{ mt: 2 }}>
+                    {imagePreview.map((preview, index) => (
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card className="image-preview-card">
+                          <CardMedia
+                            component="img"
+                            height="200"
+                            image={preview}
+                            alt={`Preview ${index + 1}`}
+                          />
+                          <Box className="image-actions" display="flex" justifyContent="center" mt={1}>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              onClick={() => removeImageAtIndex(index)}
+                              startIcon={<Close />}
+                            >
+                              Remove
+                            </Button>
+                          </Box>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
                 )}
               </Box>
             </Grid>
@@ -366,7 +400,7 @@ function CreateLog() {
             >
               {loading ? 'Creating Your Log...' : 'Create Travel Log'}
             </Button>
-            
+
             <Button
               variant="outlined"
               size="large"

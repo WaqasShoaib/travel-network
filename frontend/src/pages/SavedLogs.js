@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ImageCarousel from '../components/ImageCarousel';
 import {
   Container,
   Card,
@@ -115,7 +116,7 @@ function SavedLogs() {
 
     // Location filter
     if (filters.location) {
-      filtered = filtered.filter(log => 
+      filtered = filtered.filter(log =>
         log.location.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
@@ -196,11 +197,11 @@ function SavedLogs() {
     setUnsavingLogs(prev => ({ ...prev, [logId]: true }));
 
     try {
-      await axios.post('/user/unsave-log', 
+      await axios.post('/user/unsave-log',
         { logId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       // Remove from both original and filtered arrays
       setAllSavedLogs(prev => prev.filter(log => log._id !== logId));
       setFilteredLogs(prev => prev.filter(log => log._id !== logId));
@@ -266,7 +267,7 @@ function SavedLogs() {
               </Box>
             </Stack>
           </Box>
-          
+
           <Button
             variant="contained"
             size="large"
@@ -409,7 +410,7 @@ function SavedLogs() {
           {!showFilters && (
             <Paper className="collection-summary" elevation={1}>
               <Typography variant="body2" className="summary-text">
-                💡 <strong>{filteredLogs.length}</strong> travel log{filteredLogs.length !== 1 ? 's' : ''} in your collection. 
+                💡 <strong>{filteredLogs.length}</strong> travel log{filteredLogs.length !== 1 ? 's' : ''} in your collection.
                 Click <Favorite sx={{ fontSize: 16, mx: 0.5, color: '#ff6b6b' }} /> to remove from saved.
                 {getActiveFilterCount() > 0 && (
                   <Typography component="span" color="primary" sx={{ fontWeight: 600, ml: 1 }}>
@@ -445,16 +446,10 @@ function SavedLogs() {
                 <Fade in timeout={500 + index * 100} key={log._id}>
                   <Card className="saved-log-card" elevation={3}>
                     {/* Travel Log Image */}
-                    {log.imageUrl && (
-                      <CardMedia
-                        component="img"
-                        height="400"
-                        image={log.imageUrl}
-                        alt={log.title}
-                        className="log-image"
-                      />
+                    {log.images && log.images.length > 0 && (
+                      <ImageCarousel images={log.images} height={400} />
                     )}
-                    
+
                     <CardContent className="log-content">
                       {/* Header with Unsave Button */}
                       <Box className="log-header">
@@ -462,7 +457,7 @@ function SavedLogs() {
                           <Typography variant="h4" component="h2" className="log-title">
                             {log.title}
                           </Typography>
-                          
+
                           <Stack direction="row" spacing={2} alignItems="center" className="log-meta">
                             <Box className="author-info">
                               <Person sx={{ fontSize: 16, mr: 0.5 }} />
@@ -478,7 +473,7 @@ function SavedLogs() {
                             </Box>
                           </Stack>
                         </Box>
-                        
+
                         {/* Unsave Button */}
                         <Button
                           variant="contained"
@@ -497,7 +492,7 @@ function SavedLogs() {
                           {unsavingLogs[log._id] ? 'Removing...' : 'Unsave'}
                         </Button>
                       </Box>
-                      
+
                       {/* Location */}
                       <Box className="location-section">
                         <LocationOn color="primary" sx={{ mr: 1 }} />
@@ -505,12 +500,12 @@ function SavedLogs() {
                           {log.location}
                         </Typography>
                       </Box>
-                      
+
                       {/* Description */}
                       <Typography variant="body1" className="log-description">
                         {log.description}
                       </Typography>
-                      
+
                       {/* Tags */}
                       {log.tags && log.tags.length > 0 && (
                         <Box className="tags-section">
@@ -533,9 +528,9 @@ function SavedLogs() {
                           </Box>
                         </Box>
                       )}
-                      
+
                       <Divider sx={{ my: 2 }} />
-                      
+
                       {/* Comments Toggle Button */}
                       <Button
                         variant="outlined"
@@ -546,11 +541,11 @@ function SavedLogs() {
                       >
                         {expandedComments[log._id] ? 'Hide Comments' : 'Show Comments'}
                       </Button>
-                      
+
                       {/* Comments Section */}
                       <Collapse in={expandedComments[log._id]}>
                         <Box className="comments-section">
-                          <Comments 
+                          <Comments
                             logId={log._id}
                             logOwnerId={log.user?._id}
                             currentUserId={currentUserId}

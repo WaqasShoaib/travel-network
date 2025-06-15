@@ -12,7 +12,7 @@ const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 // POST /api/travellogs — Create new log (with image upload, protected)
-router.post('/', auth, upload.single('image'), createTravelLog);
+router.post('/', auth, upload.array('images', 5), createTravelLog);
 
 // GET /api/travellogs — Fetch all logs (public)
 router.get('/', getAllTravelLogs);

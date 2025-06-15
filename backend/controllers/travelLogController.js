@@ -5,26 +5,38 @@ const streamifier = require('streamifier');
 // Create new travel log (protected)
 exports.createTravelLog = async (req, res) => {
   try {
+    console.log('📂 req.files:', req.files);
+    console.log('📥 req.body:', req.body);
     const { title, description, location, tags } = req.body;
-    let imageUrl = '';
-    let imagePublicId = '';
 
-    if (req.file) {
-      const uploadResult = await new Promise((resolve, reject) => {
-        const cld_upload_stream = cloudinary.uploader.upload_stream(
-          { resource_type: 'image', folder: 'travel-logs' },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        );
-        streamifier.createReadStream(req.file.buffer).pipe(cld_upload_stream);
-      });
-      imageUrl = uploadResult.secure_url;
-      imagePublicId = uploadResult.public_id; // <-- save this
+    const images = [];
+
+    // Upload multiple images from req.files
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const uploadResult = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            { resource_type: 'image', folder: 'travel-logs' },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          streamifier.createReadStream(file.buffer).pipe(uploadStream);
+        });
+
+        images.push({
+          url: uploadResult.secure_url,
+          publicId: uploadResult.public_id,
+        });
+      }
     }
+    console.log('✅ Number of images received:', req.files?.length);
+    req.files.forEach((f, i) => {
+      console.log(`📸 File[${i}]:`, f.originalname);
+    });
 
-    // When creating the travel log:
+    // Create travel log with uploaded images
     const travelLog = new TravelLog({
       title,
       description,
@@ -32,15 +44,15 @@ exports.createTravelLog = async (req, res) => {
       tags: typeof tags === 'string'
         ? tags.split(',').map(tag => tag.trim())
         : Array.isArray(tags) ? tags : [],
-      imageUrl,
-      imagePublicId, 
+      images,
       user: req.user,
     });
 
     await travelLog.save();
+    console.log('✅ Saved travel log:', JSON.stringify(travelLog, null, 2));
     res.status(201).json(travelLog);
   } catch (err) {
-    console.error('Error in createTravelLog:', err); // <-- Add this line for debugging
+    console.error('❌ Error in createTravelLog:', err);
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
 };
@@ -75,34 +87,34 @@ exports.updateTravelLog = async (req, res) => {
   try {
     const { title, description, location, tags } = req.body;
     const logId = req.params.id;
-    
+
     // Debug logs
     console.log('=== UPDATE TRAVEL LOG DEBUG ===');
     console.log('Request body:', req.body);
     console.log('Log ID:', logId);
     console.log('User ID:', req.user);
     console.log('Tags received:', tags, 'Type:', typeof tags);
-    
+
     // Find the log by ID and check if the user owns it
     const travelLog = await TravelLog.findById(logId);
     if (!travelLog) {
       console.log('❌ Travel log not found');
       return res.status(404).json({ msg: 'Travel log not found' });
     }
-    
+
     console.log('Found travel log owner:', travelLog.user.toString());
     console.log('Current user:', req.user);
-    
+
     if (travelLog.user.toString() !== req.user) {
       console.log('❌ Not authorized - user mismatch');
       return res.status(403).json({ msg: 'Not authorized' });
     }
-    
+
     // Update the fields
     travelLog.title = title || travelLog.title;
     travelLog.description = description || travelLog.description;
     travelLog.location = location || travelLog.location;
-    
+
     // Handle tags properly
     if (tags !== undefined) {
       if (typeof tags === 'string') {
@@ -113,14 +125,14 @@ exports.updateTravelLog = async (req, res) => {
         travelLog.tags = [];
       }
     }
-    
+
     console.log('Updated travel log data:', {
       title: travelLog.title,
       description: travelLog.description,
       location: travelLog.location,
       tags: travelLog.tags
     });
-    
+
     await travelLog.save();  // Save the updated log
     console.log('✅ Travel log updated successfully');
     res.status(200).json(travelLog);

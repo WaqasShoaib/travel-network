@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react';
 import axios from '../utils/axios';
 import { useNavigate } from 'react-router-dom';
 import Comments from '../components/Comments';
-import { 
-  Button, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Typography, 
-  Box, 
-  Chip, 
+import ImageCarousel from '../components/ImageCarousel';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  Box,
+  Chip,
   Container,
   Grid,
   Collapse,
@@ -20,11 +21,11 @@ import {
   Fade,
   Alert
 } from '@mui/material';
-import { 
-  Edit, 
-  Delete, 
-  Comment as CommentIcon, 
-  ExpandMore, 
+import {
+  Edit,
+  Delete,
+  Comment as CommentIcon,
+  ExpandMore,
   ExpandLess,
   Add as AddIcon,
   LocationOn,
@@ -160,7 +161,7 @@ function Dashboard() {
               </Box>
             </Stack>
           </Box>
-          
+
           <Button
             variant="contained"
             size="large"
@@ -202,7 +203,7 @@ function Dashboard() {
                 <Paper className="stat-card">
                   <Photo className="stat-icon" />
                   <Typography variant="h4" className="stat-number">
-                    {logs.filter(log => log.imageUrl).length}
+                    {logs.filter(log => log.images && log.images.length > 0).length}
                   </Typography>
                   <Typography variant="body2" className="stat-label">
                     Photos Shared
@@ -244,16 +245,10 @@ function Dashboard() {
             <Fade in timeout={500 + index * 100} key={log._id}>
               <Card className="travel-log-card" elevation={3}>
                 {/* Travel Log Image */}
-                {log.imageUrl && (
-                  <CardMedia
-                    component="img"
-                    height="350"
-                    image={log.imageUrl}
-                    alt={log.title}
-                    className="log-image"
-                  />
+                {log.images && log.images.length > 0 && (
+                  <ImageCarousel images={log.images} height={400} />
                 )}
-                
+
                 <CardContent className="log-content">
                   {/* Travel Log Header */}
                   <Box className="log-header">
@@ -274,7 +269,7 @@ function Dashboard() {
                         </Box>
                       </Stack>
                     </Box>
-                    
+
                     {/* Action Buttons */}
                     <Stack direction="row" spacing={1} className="action-buttons">
                       <Button
@@ -299,7 +294,7 @@ function Dashboard() {
                       </Button>
                     </Stack>
                   </Box>
-                  
+
                   {/* Location */}
                   <Box className="location-section">
                     <LocationOn className="location-icon" />
@@ -307,12 +302,12 @@ function Dashboard() {
                       {log.location}
                     </Typography>
                   </Box>
-                  
+
                   {/* Description */}
                   <Typography variant="body1" className="log-description">
                     {log.description}
                   </Typography>
-                  
+
                   {/* Tags */}
                   {log.tags && log.tags.length > 0 && (
                     <Box className="tags-section">
@@ -333,9 +328,9 @@ function Dashboard() {
                       </Box>
                     </Box>
                   )}
-                  
+
                   <Divider className="content-divider" />
-                  
+
                   {/* Comments Management Section */}
                   <Box className="comments-management">
                     <Button
@@ -347,7 +342,7 @@ function Dashboard() {
                     >
                       {expandedComments[log._id] ? 'Hide Comments' : 'Manage Comments'}
                     </Button>
-                    
+
                     {expandedComments[log._id] && (
                       <Box className="moderation-tip">
                         <Typography variant="caption" className="tip-text">
@@ -356,11 +351,11 @@ function Dashboard() {
                       </Box>
                     )}
                   </Box>
-                  
+
                   {/* Comments Section with Moderation */}
                   <Collapse in={expandedComments[log._id]} className="comments-collapse">
                     <Box className="comments-wrapper">
-                      <Comments 
+                      <Comments
                         logId={log._id}
                         logOwnerId={currentUserId}
                         currentUserId={currentUserId}
